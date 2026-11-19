@@ -25,7 +25,7 @@ app.use(express.json());
 //отримаємо файли з public
 app.use(express.static('public'));
 
-// Получить все задачи
+// отримаємо  усі завдання
 app.get('/api/tasks', (req, res) => {
     const tasks = db.prepare('SELECT * FROM tasks').all();
     res.json(tasks);
@@ -49,6 +49,25 @@ app.post('/api/tasks', (req, res) => {
     res.status(201).json({
         id: result.lastInsertRowid,
         title: title.trim()
+    });
+});
+
+// Видаляємо задачу
+app.delete('/api/tasks/:id', (req, res) => {
+    const id = req.params.id;
+
+    const result = db.prepare(
+        'DELETE FROM tasks WHERE id = ?'
+    ).run(id);
+
+    if (result.changes === 0) {
+        return res.status(404).json({
+            error: 'Задачу не знайдено'
+        });
+    }
+
+    res.json({
+        message: 'Задачу успішно видалено'
     });
 });
 
