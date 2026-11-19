@@ -25,8 +25,35 @@ app.use(express.json());
 //отримаємо файли з public
 app.use(express.static('public'));
 
+// Получить все задачи
+app.get('/api/tasks', (req, res) => {
+    const tasks = db.prepare('SELECT * FROM tasks').all();
+    res.json(tasks);
+});
+
+//створюємо нову задачу
+app.post('/api/tasks', (req, res) => {
+    const { title } = req.body;
+
+    // Перевіряємо назву задачі
+    if (!title || typeof title !== 'string' || !title.trim()) {
+        return res.status(400).json({
+            error: 'Назва задачі обов’язкова'
+        });
+    }
+
+    const result = db.prepare(
+        'INSERT INTO tasks (title) VALUES (?)'
+    ).run(title.trim());
+
+    res.status(201).json({
+        id: result.lastInsertRowid,
+        title: title.trim()
+    });
+});
 
 // запускаємо сервер
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
 });
+
